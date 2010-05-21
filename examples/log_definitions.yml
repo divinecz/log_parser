@@ -1,0 +1,11 @@
+logs:
+  0x4c:
+    name: create_account
+    size: 8
+
+
+# data 0.7,1,2 = cas
+# data 3 = cislo zaviraneho uctu (0..63)
+# data 4,5 = user_no pro ktery je zalozen ucet
+# data 6,7 = 0 pro uzavreni
+# data 6,7 = FFFF pro zalozeni (vyhodnocovat bit data 7.7 pro pripad rozsireni)

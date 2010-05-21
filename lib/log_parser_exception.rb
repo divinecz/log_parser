@@ -1,0 +1,1 @@
+class LogParserException < StandardError; end

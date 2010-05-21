@@ -15,6 +15,7 @@ class LogParser
     raw_data << read_raw_data(definition["size"] - 1)
     attributes = {}
     definition["attributes"].each_pair do |key, value|
+      puts key
       attributes[key.to_sym] = type_cast_data(read_data(value["read"].to_s, raw_data), value["as"])
     end
     { :name => definition["name"], :attributes => attributes }
@@ -56,10 +57,24 @@ class LogParser
   
   def read_data(expression, raw_data)
     data = ""
-    terms = expression.split(" ")
-    terms.each do |term|
-      #TODO partial bytes
-      data << raw_data[term.to_i]
+    ranges = expression.split(",")
+    ranges.each do |range|
+      range.strip!
+      range_start, range_end = range.split("-")
+      # 1 or 1.1
+      if range_end.nil?
+        byte_position, bit_position = range_start.split(".")
+        # 1
+        if bit_position.nil?
+          data << raw_data[byte_position.to_i]
+        # 1.1
+        else
+          byte = raw_data[byte_position.to_i]
+          data = ((byte >> (7 - bit_position.to_i)) & 0x1).chr
+        end
+      # 1-2 or 1.1-2.2
+      else
+      end
     end
     data
   end

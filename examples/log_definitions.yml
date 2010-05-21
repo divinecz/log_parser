@@ -4,13 +4,13 @@ logs:
     size: 8
     attributes:
       account:
-        read: 3
+        read: "3"
         as: uint
       user:
-        read: 4 5
+        read: "4,5"
         as: uint
       open:
-        read: 6 7
+        read: "7.7"
         as: bool
 
 # data 0.7,1,2 = cas

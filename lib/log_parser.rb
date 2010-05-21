@@ -56,7 +56,9 @@ class LogParser
   end
   
   def read_data(expression, raw_data)
+    #TODO: refactoring needed
     data = ""
+    position = 0
     ranges = expression.split(",")
     ranges.each do |range|
       range.strip!
@@ -71,6 +73,8 @@ class LogParser
         else
           byte = raw_data[byte_position.to_i]
           data = ((byte >> (7 - bit_position.to_i)) & 0x1).chr
+          position += 1
+          position = position % 8
         end
       # 1-2 or 1.1-2.2
       else

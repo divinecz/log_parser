@@ -3,6 +3,9 @@ logs:
     name: create_account
     size: 8
     attributes:
+      time:
+        read: "0.7,1,2"
+        as: uint
       account:
         read: "3"
         as: uint

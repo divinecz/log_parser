@@ -4,7 +4,8 @@ require "stringio"
 LOG_DEFINITIONS_PATH = File.dirname(File.expand_path(__FILE__)) + "/log_definitions.yml"
 
 HEX_LOGS = {
-  :log_create_account => "CCD0430CE80AFFFF"
+  :log_create_account => "CCD0430CE80AFFFF",
+  :log_change_account => "4C976B0CE80A0000"
 }
 
 def hex_log_to_binary(hex_log)

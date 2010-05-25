@@ -10,12 +10,10 @@ class LogParser
     header = read_byte
     id = parse_id_from_header(header)
     definition = find_definition(id)
-    puts definition.inspect
     raw_data = parse_raw_data_from_header(header)
     raw_data << read_raw_data(definition["size"] - 1)
     attributes = {}
     definition["attributes"].each_pair do |key, value|
-      puts key
       attributes[key.to_sym] = type_cast_data(read_data(value["read"].to_s, raw_data), value["as"])
     end
     { :name => definition["name"], :attributes => attributes }
@@ -54,10 +52,10 @@ class LogParser
     end
     raw_data
   end
-  
+
   def read_data(expression, raw_data)
     #TODO: refactoring needed
-    data = ""
+    data = BitBuffer.new
     position = 0
     ranges = expression.split(",")
     ranges.each do |range|
@@ -68,29 +66,27 @@ class LogParser
         byte_position, bit_position = range_start.split(".")
         # 1
         if bit_position.nil?
-          data << raw_data[byte_position.to_i]
-        # 1.1
+          data.append_byte(raw_data[byte_position.to_i])
+          # 1.1
         else
-          byte = raw_data[byte_position.to_i]
-          data = ((byte >> (7 - bit_position.to_i)) & 0x1).chr
-          position += 1
-          position = position % 8
+          data.append_bit(raw_data[byte_position.to_i][bit_position.to_i])
         end
-      # 1-2 or 1.1-2.2
+        # 1-2 or 1.1-2.2
       else
       end
     end
-    data
+    data.to_s
   end
-  
+
   def type_cast_data(data, as)
     size = data.size
     case as
     when "bool"
-      data.unpack({1 => "C", 2 => "v", 4 => "I"}[size]).first > 0
+      data.unpack({1 => "C", 2 => "v", 4 => "L"}[size]).first > 0
     when "uint"
-      data.unpack({1 => "C", 2 => "v", 4 => "I"}[size]).first
+      data << "\0" if size == 3
+      data.unpack({1 => "C", 2 => "v", 4 => "L"}[data.size]).first
     end
   end
-  
+
 end

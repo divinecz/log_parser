@@ -3,7 +3,7 @@ module LogParser
 
     def initialize(definitions_path, &read_byte_block)
       raise ArgumentError, "Missing block" unless block_given?
-      load_definitions(definitions_path)
+      @definition_loader = DefinitionLoader.new(definitions_path)
       @reader = Reader.new(read_byte_block)
     end
 
@@ -11,30 +11,25 @@ module LogParser
       header = @reader.read(1)[0]
       if header
         id = parse_id_from_header(header)
-        definition = find_definition(id)
+        log_definition = @definition_loader[id]
         data = parse_data_from_header(header)
-        data << @reader.read(definition["size"] - 1)
-        attributes = []
-        values = []
-        definition["attributes"].keys.sort.each do |key|
-          definition_for_attribute = definition["attributes"][key]
-          expression = definition_for_attribute["read"].to_s
-          type = definition_for_attribute["type"].downcase.to_sym
-          attributes << key.to_sym
-          values << parse_attribute(expression, data).type_cast(type)
+        data << @reader.read(log_definition.size - 1)
+        attribute_values = []
+        log_definition.attribute_names.each do |attribute_name|
+          read = log_definition[attribute_name].read
+          type = log_definition[attribute_name].type
+          attribute_values << parse_attribute(read, data).type_cast(type)
         end
-        struct_name = definition["name"].gsub(/(?:^|_)(.)/) { $1.upcase } + "Log"
-        struct = Struct.const_defined?(struct_name) ? Struct.const_get(struct_name) : Struct.new(struct_name, *attributes)
-        struct.new(*values)
+        struct_name = log_definition.name.gsub(/(?:^|_)(.)/) { $1.upcase } + "Log"
+        if Struct.const_defined?(struct_name)
+          Struct.const_get(struct_name)
+        else
+          Struct.new(struct_name, *log_definition.attribute_names)
+        end.new(*attribute_values)
       end
     end
 
     private
-
-    def load_definitions(definitions_path)
-      @definitions = YAML::load(File.read(definitions_path))["logs"]
-      raise LogParserException, "Cannot load log definitions from #{definitions_path}" if @definitions.nil?
-    end
 
     def parse_id_from_header(header)
       header & 0x7f
@@ -44,15 +39,9 @@ module LogParser
       (header & 0x80).chr
     end
 
-    def find_definition(id)
-      definition = @definitions[id]
-      raise LogParserError, "Unknown log definition for 0x#{id.to_s(16)}" if definition.nil?
-      definition
-    end
-
-    def parse_attribute(expression, data)
+    def parse_attribute(read, data)
       attribute = Attribute.new
-      ranges = expression.split(",")
+      ranges = read.split(",")
       ranges.each do |range|
         range_start, range_end = range.split("-")
         if range_end.nil?

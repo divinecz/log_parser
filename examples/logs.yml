@@ -1,14 +1,14 @@
 templates:
   time: &time
     time_seconds:
-      read: "1.0,1.1,1.2,1.3,1.4,1.5"
-      as: uint
+      read: "1.0-1.5"
+      type: uint
     time_minutes:
-      read: "1.6,1.7,2.0,2.1,2.2,2.3"
-      as: uint
+      read: "1.6-2.3"
+      type: uint
     time_hours:
-      read: "2.4,2.5,2.6,2.7,0.7"
-      as: uint
+      read: "2.4-2.7,0.7"
+      type: uint
 logs:
   0x4c:
     name: create_account
@@ -17,10 +17,10 @@ logs:
       <<: *time
       account:
         read: "3"
-        as: uint
+        type: uint
       user:
-        read: "4,5"
-        as: uint
+        read: "4-5"
+        type: uint
       open:
         read: "7.7"
-        as: bool
+        type: bool

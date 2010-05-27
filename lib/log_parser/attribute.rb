@@ -8,18 +8,18 @@ module LogParser
 
     def append_bit(bit)
       raise "Not a bit value '#{bit.inspect}'" if !bit.is_a?(Fixnum) || !(0..1).include?(bit)
-      if @position % 8 == 0
+      if current_byte_position == 0
         @buffer << "\0"
       end
       if bit == 1
-        @buffer[@position / 8] |= (0x1 << (@position % 8))
+        @buffer[@position / 8] |= (0x1 << (current_byte_position))
       end
       @position += 1
     end
 
     def append_byte(byte)
       raise "Not a byte value '#{byte.inspect}'" if !byte.is_a?(Fixnum) || !(0..255).include?(byte)
-      if @position % 8 == 0
+      if current_byte_position == 0
         @buffer << byte
       else
         8.times do |i|
@@ -33,13 +33,27 @@ module LogParser
     end
 
     def type_cast(type)
-      case type
-      when "bool"
-        @buffer.unpack({1 => "C", 2 => "v", 4 => "L"}[@buffer.size]).first > 0
-      when "uint"
-        @buffer << "\0" if @buffer.size == 3
-        @buffer.unpack({1 => "C", 2 => "v", 4 => "L"}[@buffer.size]).first
+      if @buffer.any?
+        case type
+        when :bool
+          type_cast_uint > 0
+        when :uint
+          type_cast_uint
+        else
+          raise LogParserError, "Unknown type '#{type}'"
+        end
       end
+    end
+
+    private
+
+    def current_byte_position
+      @position % 8
+    end
+
+    def type_cast_uint
+      @buffer << "\0" if @buffer.size == 3
+      @buffer.unpack({1 => "C", 2 => "v", 4 => "L"}[@buffer.size]).first
     end
 
   end

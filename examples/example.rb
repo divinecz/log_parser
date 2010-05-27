@@ -13,17 +13,16 @@ def hex_log_to_binary(hex_log)
   StringIO.new(hex_log.to_a.pack("H*"))
 end
 
-binary_logs = {}
-HEX_LOGS.each_pair do |key, value|
-  binary_logs[key] = hex_log_to_binary(value)
-end
-
-log = binary_logs[:log_create_account]
+binary_log = hex_log_to_binary(HEX_LOGS.values.join)
 
 log_parser = LogParser::Parser.new(LOGS_PATH) do
-  log.readbyte
+  begin
+    binary_log.readbyte 
+  rescue EOFError
+    nil
+  end
 end
 
-parsed_log = log_parser.parse
-puts parsed_log.members
-puts parsed_log.inspect
+while parsed_log = log_parser.parse do
+  puts parsed_log.inspect
+end

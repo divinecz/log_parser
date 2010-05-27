@@ -12,8 +12,8 @@ module LogParser
       if header
         id = parse_id_from_header(header)
         definition = find_definition(id)
-        raw_data = parse_raw_data_from_header(header)
-        raw_data << @reader.read(definition["size"] - 1)
+        data = parse_data_from_header(header)
+        data << @reader.read(definition["size"] - 1)
         attributes = []
         values = []
         definition["attributes"].keys.sort.each do |key|
@@ -21,7 +21,7 @@ module LogParser
           expression = definition_for_attribute["read"].to_s
           type = definition_for_attribute["type"].downcase.to_sym
           attributes << key.to_sym
-          values << read_attribute(expression, raw_data).type_cast(type)
+          values << read_attribute(expression, data).type_cast(type)
         end
         struct_name = definition["name"].gsub(/(?:^|_)(.)/) { $1.upcase } + "Log"
         struct = Struct.const_defined?(struct_name) ? Struct.const_get(struct_name) : Struct.new(struct_name, *attributes)
@@ -29,19 +29,18 @@ module LogParser
       end
     end
 
-    protected
+    private
 
     def load_definitions(definitions_path)
       @definitions = YAML::load(File.read(definitions_path))["logs"]
       raise LogParserException, "Cannot load log definitions from #{definitions_path}" if @definitions.nil?
-      #TODO: validate, regexp for read expression
     end
 
     def parse_id_from_header(header)
       header & 0x7f
     end
 
-    def parse_raw_data_from_header(header)
+    def parse_data_from_header(header)
       (header & 0x80).chr
     end
 
@@ -51,8 +50,7 @@ module LogParser
       definition
     end
 
-    def read_attribute(expression, raw_data)
-      #TODO: refactoring needed
+    def read_attribute(expression, data)
       attribute = Attribute.new
       ranges = expression.split(",")
       ranges.each do |range|
@@ -60,26 +58,32 @@ module LogParser
         range_start, range_end = range.split("-")
         range_start.strip!
         if range_end.nil?
-          byte_position, bit_position = range_start.split(".")
-          if bit_position.nil?
-            attribute.append_byte(raw_data[byte_position.to_i])
+          byte_index, bit_index = range_start.split(".")
+          byte_index = byte_index.to_i
+          if bit_index.nil?
+            attribute.append_byte(data[byte_index])
           else
-            attribute.append_bit(raw_data[byte_position.to_i][bit_position.to_i])
+            bit_index = bit_index.to_i
+            attribute.append_bit(data[byte_index][bit_index])
           end
         else
           range_end.strip!
-          start_byte_position, start_bit_position = range_start.split(".")
-          end_byte_position, end_bit_position = range_end.split(".")
-          if start_bit_position.nil?
-            start_byte_position.to_i.upto(end_byte_position.to_i) do |i|
-              attribute.append_byte(raw_data[i])
+          start_byte_index, start_bit_index = range_start.split(".")
+          end_byte_index, end_bit_index = range_end.split(".")
+          start_byte_index = start_byte_index.to_i
+          end_byte_index = end_byte_index.to_i
+          if start_bit_index.nil?
+            start_byte_index.upto(end_byte_index) do |byte_index|
+              attribute.append_byte(data[byte_index])
             end
           else
-            start_byte_position.to_i.upto(end_byte_position.to_i) do |i|
-              start_position = i == start_byte_position.to_i ? start_bit_position.to_i : 0
-              end_position = i == end_byte_position.to_i ? end_bit_position.to_i : 7
-              start_position.upto(end_position) do |j|
-                attribute.append_bit(raw_data[i][j])
+            start_bit_index = start_bit_index.to_i
+            end_bit_index = end_bit_index.to_i
+            start_byte_index.upto(end_byte_index) do |byte_index|
+              current_bit_start_index = byte_index == start_byte_index ? start_bit_index : 0
+              current_bit_end_index = byte_index == end_byte_index ? end_bit_index : 7
+              current_bit_start_index.upto(current_bit_end_index) do |bit_index|
+                attribute.append_bit(data[byte_index][bit_index])
               end
             end
           end

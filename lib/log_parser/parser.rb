@@ -21,7 +21,7 @@ module LogParser
           expression = definition_for_attribute["read"].to_s
           type = definition_for_attribute["type"].downcase.to_sym
           attributes << key.to_sym
-          values << read_attribute(expression, data).type_cast(type)
+          values << parse_attribute(expression, data).type_cast(type)
         end
         struct_name = definition["name"].gsub(/(?:^|_)(.)/) { $1.upcase } + "Log"
         struct = Struct.const_defined?(struct_name) ? Struct.const_get(struct_name) : Struct.new(struct_name, *attributes)
@@ -50,21 +50,21 @@ module LogParser
       definition
     end
 
-    def read_attribute(expression, data)
+    def parse_attribute(expression, data)
       attribute = Attribute.new
       ranges = expression.split(",")
       ranges.each do |range|
         range_start, range_end = range.split("-")
         if range_end.nil?
-          read_attribute_part(attribute, data, range_start)
+          parse_attribute_part(attribute, data, range_start)
         else
-          read_attribute_parts_range(attribute, data, range_start, range_end)
+          parse_attribute_part_range(attribute, data, range_start, range_end)
         end
       end
       attribute
     end
 
-    def read_attribute_part(attribute, data, index)
+    def parse_attribute_part(attribute, data, index)
       byte_index, bit_index = index.split(".")
       byte_index = byte_index.to_i
       if bit_index.nil?
@@ -75,7 +75,7 @@ module LogParser
       end
     end
 
-    def read_attribute_parts_range(attribute, data, start_index, end_index)
+    def parse_attribute_part_range(attribute, data, start_index, end_index)
       start_byte_index, start_bit_index = start_index.split(".")
       end_byte_index, end_bit_index = end_index.split(".")
       start_byte_index = start_byte_index.to_i

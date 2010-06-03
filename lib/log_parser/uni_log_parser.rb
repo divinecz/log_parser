@@ -14,11 +14,11 @@ module LogParser
         log_definition = @definition_loader[id]
         data = parse_data_from_header(header)
         data << @reader.read(log_definition.size - 1)
-        log = { :name => log_definition.name, :attributtes => {} }
+        log = { :name => log_definition.name, :attributes => {} }
         log_definition.attribute_names.each do |attribute_name|
           read = log_definition[attribute_name].read
           type = log_definition[attribute_name].type
-          log[:attributtes][attribute_name] = parse_attribute(read, data).type_cast(type)
+          log[:attributes][attribute_name] = parse_attribute(read, data).type_cast(type)
         end
         log
       end

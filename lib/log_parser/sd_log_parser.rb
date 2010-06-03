@@ -10,11 +10,11 @@ module LogParser
       device_id = data[0x1c..0x1d]
       log_id = data[0x1e..0x1f].unpack("S").first
       log_definition = @definition_loader[log_id]
-      log = { :name => log_definition.name, :attributtes => {} }
+      log = { :name => log_definition.name, :attributes => {} }
       log_definition.attribute_names.each do |attribute_name|
         read = log_definition[attribute_name].read
         type = log_definition[attribute_name].type
-        log[:attributtes][attribute_name] = parse_attribute(read, data).type_cast(type)
+        log[:attributes][attribute_name] = parse_attribute(read, data).type_cast(type)
       end
       log
     end

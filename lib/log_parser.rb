@@ -1,5 +1,6 @@
 require "iconv"
 require "yaml"
+require "digest/sha1"
 require "log_parser/attribute"
 require "log_parser/attribute_definition"
 require "log_parser/definition_loader"

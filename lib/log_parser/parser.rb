@@ -1,43 +1,11 @@
 module LogParser
   class Parser
 
-    def initialize(definitions_path, &read_byte_block)
-      raise ArgumentError, "Missing block" unless block_given?
-      @definition_loader = DefinitionLoader.new(definitions_path)
-      @reader = Reader.new(read_byte_block)
+    def initialize
+      raise NotImplementedError
     end
 
-    def parse
-      header = @reader.read(1)[0]
-      if header
-        id = parse_id_from_header(header)
-        log_definition = @definition_loader[id]
-        data = parse_data_from_header(header)
-        data << @reader.read(log_definition.size - 1)
-        attribute_values = []
-        log_definition.attribute_names.each do |attribute_name|
-          read = log_definition[attribute_name].read
-          type = log_definition[attribute_name].type
-          attribute_values << parse_attribute(read, data).type_cast(type)
-        end
-        struct_name = log_definition.name.gsub(/(?:^|_)(.)/) { $1.upcase } + "Log"
-        if Struct.const_defined?(struct_name)
-          Struct.const_get(struct_name)
-        else
-          Struct.new(struct_name, *log_definition.attribute_names)
-        end.new(*attribute_values)
-      end
-    end
-
-    private
-
-    def parse_id_from_header(header)
-      header & 0x7f
-    end
-
-    def parse_data_from_header(header)
-      (header & 0x80).chr
-    end
+    protected
 
     def parse_attribute(read, data)
       attribute = Attribute.new

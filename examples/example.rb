@@ -15,7 +15,7 @@ end
 
 binary_log = hex_log_to_binary(HEX_LOGS.values.join)
 
-log_parser = LogParser::Parser.new(LOGS_PATH) do
+log_parser = LogParser::UniLogParser.new(LOGS_PATH) do
   begin
     binary_log.readbyte 
   rescue EOFError

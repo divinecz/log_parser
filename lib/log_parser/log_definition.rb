@@ -5,7 +5,7 @@ module LogParser
 
     def initialize(id, name, size, attribute_definitions)
       @id = id.to_i
-      raise LogParserError, "Invalid log id '#{id.to_s(16)}'" if !(0x1..0x7f).include?(id)
+      #raise LogParserError, "Invalid log id '#{id.to_s(16)}'" if !(0x1..0x7f).include?(id)
       @name = name
       raise LogParserError, "Name is not defined for log 0x#{id.to_s(16)}" if name.strip.empty?
       @size = size.to_i

@@ -10,7 +10,7 @@ HEX_LOGS = {
 }
 
 def hex_log_to_binary(hex_log)
-  StringIO.new(hex_log.to_a.pack("H*"))
+  StringIO.new([hex_log].pack("H*"))
 end
 
 binary_log = hex_log_to_binary(HEX_LOGS.values.join)

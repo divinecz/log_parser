@@ -12,7 +12,7 @@ module LogParser
         @buffer << "\0"
       end
       if bit == 1
-        @buffer[@position / 8] |= (0x1 << (current_byte_position))
+        @buffer[@position / 8] = (@buffer.bytes.to_a[@position / 8] | (0x1 << (current_byte_position))).chr
       end
       @position += 1
     end
@@ -33,7 +33,7 @@ module LogParser
     end
 
     def type_cast(type)
-      if @buffer.any?
+      unless @buffer.empty?
         case type
         when :bcd
           type_cast_bcd

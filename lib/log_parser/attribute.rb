@@ -39,6 +39,8 @@ module LogParser
           type_cast_bcd
         when :bool
           type_cast_uint > 0
+        when :hex
+          type_cast_hex
         when :string
           Iconv.iconv("UTF8", "CP1250", @buffer).first
         when :uint
@@ -63,6 +65,10 @@ module LogParser
         number += ((digits & 0x0f) * (index + 1)) + ((digits >> 4)  * 10 * (index + 1))
       end
       number
+    end
+
+    def type_cast_hex
+      "%0#{@buffer.size * 2}X" % type_cast_uint
     end
 
     def type_cast_uint

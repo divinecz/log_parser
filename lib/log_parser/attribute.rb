@@ -58,9 +58,9 @@ module LogParser
     def type_cast_bcd
       buffer = @buffer
       number = 0
-      buffer.each_with_index do |char, index|
+      buffer.bytes.each_with_index do |char, index|
         digits = buffer.unpack("C").first
-        number = ((digits & 0x0f) * (index + 1)) + ((digits >> 4)  * 10 * (index + 1))
+        number += ((digits & 0x0f) * (index + 1)) + ((digits >> 4)  * 10 * (index + 1))
       end
       number
     end

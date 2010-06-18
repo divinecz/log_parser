@@ -12,7 +12,7 @@ module LogParser
         @buffer << "\0"
       end
       if bit == 1
-        @buffer[@position / 8] = (@buffer.bytes.to_a[@position / 8] | (0x1 << (current_byte_position))).chr
+        @buffer[@position / 8] = (@buffer[@position / 8].ord | (0x1 << (current_byte_position))).chr
       end
       @position += 1
     end
@@ -42,7 +42,7 @@ module LogParser
         when :hex
           type_cast_hex
         when :string
-          Iconv.iconv("UTF8", "CP1250", @buffer).first
+          Iconv.iconv("UTF8", "CP1250", @buffer).first rescue @buffer
         when :uint
           type_cast_uint
         else

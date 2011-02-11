@@ -8,7 +8,8 @@ module LogParser
     end
 
     def parse
-      header = @reader.read(1)[0].try(:ord)
+      header = @reader.read(1)[0]
+      header = header.ord if header.respond_to?(:ord)
       if header
         id = parse_id_from_header(header)
         log_definition = @definition_loader[id]

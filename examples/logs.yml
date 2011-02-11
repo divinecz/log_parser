@@ -9,6 +9,17 @@ templates:
     time_hours:
       read: "2.4-2.7,0.7"
       type: uint
+  date: &date
+    date_day:
+      read: "3.0-3.4"
+      type: uint
+    date_month:
+      read: "3.5-4.0"
+      type: uint
+    date_year:
+      read: "4.1-4.7"
+      type: uint
+
 logs:
   0x4c:
     name: create_account
@@ -24,3 +35,9 @@ logs:
       open:
         read: "7.7"
         type: bool
+  0x1:
+    name: time_over
+    size: 8
+    attributes:
+      <<: *time
+      <<: *date

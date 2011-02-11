@@ -6,7 +6,8 @@ LOGS_PATH = File.dirname(File.expand_path(__FILE__)) + "/logs.yml"
 
 HEX_LOGS = {
   :log_create_account => "CCD0430CE80AFFFF",
-  :log_change_account => "4C976B0CE80A0000"
+  :log_change_account => "4C976B0CE80A0000",
+  :log_time_over => "01010043160000D4"
 }
 
 def hex_log_to_binary(hex_log)
